@@ -587,7 +587,7 @@ export function Blueprints() {
     if (prefix) {
       navigate(`/${prefix}/agents/new?blueprintId=${bp.id}`);
     } else {
-      pushToast({ tone: "warning", title: "Select a company first to hire from a blueprint." });
+      pushToast({ tone: "warn", title: "Select a company first to hire from a blueprint." });
     }
   }
 
