@@ -525,9 +525,9 @@ export function Blueprints() {
       tags: state.tags,
       adapterType: state.configValues.adapterType,
       adapterConfig,
-      runtimeConfig: {},
+      runtimeConfig: (dialogMode === "edit" ? activeBlueprint?.runtimeConfig : null) ?? {},
       budgetMonthlyCents: state.budgetMonthlyCents,
-      permissions: {},
+      permissions: (dialogMode === "edit" ? activeBlueprint?.permissions : null) ?? {},
       metadata: state.desiredSkills.length > 0 ? { desiredSkills: state.desiredSkills } : null,
     };
 
