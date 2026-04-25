@@ -586,6 +586,8 @@ export function Blueprints() {
     const prefix = selectedCompany?.issuePrefix?.toUpperCase();
     if (prefix) {
       navigate(`/${prefix}/agents/new?blueprintId=${bp.id}`);
+    } else {
+      pushToast({ tone: "warning", title: "Select a company first to hire from a blueprint." });
     }
   }
 

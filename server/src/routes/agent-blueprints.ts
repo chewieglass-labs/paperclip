@@ -44,9 +44,9 @@ export function agentBlueprintRoutes(db: Db) {
     validate(updateAgentBlueprintSchema),
     async (req, res) => {
       assertBoard(req);
-      const existing = await svc.get(req.params.id as string as string);
+      const existing = await svc.get(req.params.id as string);
       if (!existing) throw notFound("Blueprint not found");
-      const updated = await svc.update(req.params.id as string as string, req.body);
+      const updated = await svc.update(req.params.id as string, req.body);
       res.json(updated);
     },
   );
