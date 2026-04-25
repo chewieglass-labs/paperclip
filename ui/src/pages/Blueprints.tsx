@@ -571,6 +571,7 @@ export function Blueprints() {
           runtimeConfig: payload.runtimeConfig ?? {},
           budgetMonthlyCents: payload.budgetMonthlyCents ?? 0,
           permissions: payload.permissions ?? {},
+          instructionsContent: payload.instructionsContent ?? null,
           metadata: payload.metadata ?? null,
         });
         queryClient.invalidateQueries({ queryKey: queryKeys.blueprints.all });
