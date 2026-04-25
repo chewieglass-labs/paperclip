@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useDeferredValue } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@/lib/router";
 import { useDialog } from "../context/DialogContext";
@@ -45,6 +45,7 @@ export function NewAgentDialog() {
   const [step, setStep] = useState<Step>("main");
   const [selectedBlueprint, setSelectedBlueprint] = useState<AgentBlueprint | null>(null);
   const [blueprintSearch, setBlueprintSearch] = useState("");
+  const deferredBlueprintSearch = useDeferredValue(blueprintSearch);
   const disabledTypes = useDisabledAdaptersSync();
 
   function reset() {
@@ -69,8 +70,8 @@ export function NewAgentDialog() {
 
   // Fetch blueprints when on picker step
   const { data: blueprints } = useQuery({
-    queryKey: queryKeys.blueprints.list(blueprintSearch || undefined),
-    queryFn: () => blueprintsApi.list({ search: blueprintSearch || undefined }),
+    queryKey: queryKeys.blueprints.list(deferredBlueprintSearch || undefined),
+    queryFn: () => blueprintsApi.list({ search: deferredBlueprintSearch || undefined }),
     enabled: newAgentOpen && (step === "blueprint-pick" || step === "blueprint-action"),
   });
 

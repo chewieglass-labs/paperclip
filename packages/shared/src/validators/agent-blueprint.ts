@@ -23,6 +23,8 @@ export const createAgentBlueprintSchema = z.object({
 
 export type CreateAgentBlueprint = z.infer<typeof createAgentBlueprintSchema>;
 
-export const updateAgentBlueprintSchema = createAgentBlueprintSchema.partial();
+export const updateAgentBlueprintSchema = createAgentBlueprintSchema
+  .omit({ sourceAgentId: true, sourceBlueprintId: true })
+  .partial();
 
 export type UpdateAgentBlueprint = z.infer<typeof updateAgentBlueprintSchema>;
