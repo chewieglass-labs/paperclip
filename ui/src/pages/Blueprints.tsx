@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@/lib/router";
 import { useCompany } from "../context/CompanyContext";
@@ -454,6 +454,7 @@ export function Blueprints() {
   const { pushToast } = useToastActions();
 
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const [roleFilter, setRoleFilter] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
@@ -466,8 +467,8 @@ export function Blueprints() {
   }, [setBreadcrumbs]);
 
   const blueprintsQ = useQuery({
-    queryKey: queryKeys.blueprints.list(search || undefined, roleFilter || undefined),
-    queryFn: () => blueprintsApi.list({ search: search || undefined, role: roleFilter || undefined }),
+    queryKey: queryKeys.blueprints.list(deferredSearch || undefined, roleFilter || undefined),
+    queryFn: () => blueprintsApi.list({ search: deferredSearch || undefined, role: roleFilter || undefined }),
   });
 
   const { data: companySkills } = useQuery({
@@ -516,7 +517,7 @@ export function Blueprints() {
     const adapter = getUIAdapter(state.configValues.adapterType);
     const adapterConfig = adapter.buildAdapterConfig(state.configValues);
 
-    const payload = {
+    const basePayload = {
       name: state.name.trim(),
       description: state.description.trim() || null,
       role: state.role as typeof AGENT_ROLES[number],
@@ -525,16 +526,14 @@ export function Blueprints() {
       tags: state.tags,
       adapterType: state.configValues.adapterType,
       adapterConfig,
-      runtimeConfig: (dialogMode === "edit" ? activeBlueprint?.runtimeConfig : null) ?? {},
       budgetMonthlyCents: state.budgetMonthlyCents,
-      permissions: (dialogMode === "edit" ? activeBlueprint?.permissions : null) ?? {},
       metadata: state.desiredSkills.length > 0 ? { desiredSkills: state.desiredSkills } : null,
     };
 
     if (dialogMode === "create") {
-      createMutation.mutate(payload);
+      createMutation.mutate({ ...basePayload, runtimeConfig: {}, permissions: {} });
     } else if (dialogMode === "edit" && activeBlueprint) {
-      updateMutation.mutate({ id: activeBlueprint.id, input: payload });
+      updateMutation.mutate({ id: activeBlueprint.id, input: basePayload });
     }
   }
 
@@ -575,6 +574,7 @@ export function Blueprints() {
           metadata: payload.metadata ?? null,
         });
         queryClient.invalidateQueries({ queryKey: queryKeys.blueprints.all });
+        pushToast({ tone: "success", title: "Blueprint imported" });
       } catch (err) {
         setImportError(err instanceof Error ? err.message : "Invalid blueprint file");
       }
