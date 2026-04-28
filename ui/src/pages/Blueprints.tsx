@@ -62,6 +62,7 @@ interface BlueprintFormState {
   configValues: CreateConfigValues;
   budgetMonthlyCents: number;
   desiredSkills: string[];
+  instructionsContent: string;
 }
 
 function emptyFormState(): BlueprintFormState {
@@ -76,6 +77,7 @@ function emptyFormState(): BlueprintFormState {
     configValues: { ...defaultCreateValues },
     budgetMonthlyCents: 0,
     desiredSkills: [],
+    instructionsContent: "",
   };
 }
 
@@ -96,6 +98,7 @@ function blueprintToFormState(bp: AgentBlueprint): BlueprintFormState {
     },
     budgetMonthlyCents: bp.budgetMonthlyCents,
     desiredSkills: Array.isArray(metaSkills) ? (metaSkills as string[]) : [],
+    instructionsContent: bp.instructionsContent ?? "",
   };
 }
 
@@ -382,6 +385,18 @@ function BlueprintFormDialog({
             />
           </div>
 
+          {/* Instructions */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Instructions</label>
+            <textarea
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-y"
+              rows={6}
+              value={form.instructionsContent}
+              onChange={(e) => patch({ instructionsContent: e.target.value })}
+              placeholder="Agent instructions (AGENTS.md content). Passed to the agent on every run."
+            />
+          </div>
+
           {/* Tags */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tags</label>
@@ -528,6 +543,7 @@ export function Blueprints() {
       adapterConfig,
       budgetMonthlyCents: state.budgetMonthlyCents,
       metadata: state.desiredSkills.length > 0 ? { desiredSkills: state.desiredSkills } : null,
+      instructionsContent: state.instructionsContent.trim() || null,
     };
 
     if (dialogMode === "create") {
@@ -572,6 +588,8 @@ export function Blueprints() {
           permissions: payload.permissions ?? {},
           instructionsContent: payload.instructionsContent ?? null,
           metadata: payload.metadata ?? null,
+          sourceAgentId: payload.sourceAgentId ?? null,
+          sourceBlueprintId: payload.sourceBlueprintId ?? null,
         });
         queryClient.invalidateQueries({ queryKey: queryKeys.blueprints.all });
         pushToast({ tone: "success", title: "Blueprint imported" });

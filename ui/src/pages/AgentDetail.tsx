@@ -1211,6 +1211,26 @@ function SaveAsBlueprintDialog({ agent, companyId, open, onClose }: SaveAsBluepr
   const [capabilities, setCapabilities] = useState(agent.capabilities ?? "");
   const [tags, setTags] = useState<string[]>(agent.tags ?? []);
   const [budgetMonthlyCents, setBudgetMonthlyCents] = useState(agent.budgetMonthlyCents);
+  const [instructionsContent, setInstructionsContent] = useState("");
+
+  const { data: bundle } = useQuery({
+    queryKey: queryKeys.agents.instructionsBundle(agent.id),
+    queryFn: () => agentsApi.instructionsBundle(agent.id, companyId),
+    enabled: open && Boolean(companyId),
+  });
+
+  const entryFile = bundle?.entryFile ?? "AGENTS.md";
+  const { data: entryFileDetail } = useQuery({
+    queryKey: queryKeys.agents.instructionsFile(agent.id, entryFile),
+    queryFn: () => agentsApi.instructionsFile(agent.id, entryFile, companyId),
+    enabled: open && Boolean(bundle),
+  });
+
+  useEffect(() => {
+    if (entryFileDetail?.content && !instructionsContent) {
+      setInstructionsContent(entryFileDetail.content);
+    }
+  }, [entryFileDetail]); // eslint-disable-line react-hooks/exhaustive-deps
   const [roleOpen, setRoleOpen] = useState(false);
   const [configValues, setConfigValues] = useState<CreateConfigValues>({
     ...defaultCreateValues,
@@ -1275,6 +1295,7 @@ function SaveAsBlueprintDialog({ agent, companyId, open, onClose }: SaveAsBluepr
       icon: agent.icon ?? null,
       sourceAgentId: agent.id,
       sourceBlueprintId: agent.sourceBlueprintId ?? null,
+      instructionsContent: instructionsContent.trim() || null,
     });
   }
 
@@ -1337,6 +1358,17 @@ function SaveAsBlueprintDialog({ agent, companyId, open, onClose }: SaveAsBluepr
               value={capabilities}
               onChange={(e) => setCapabilities(e.target.value)}
               placeholder="Brief description of what this agent can do"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Instructions</label>
+            <textarea
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-y"
+              rows={6}
+              value={instructionsContent}
+              onChange={(e) => setInstructionsContent(e.target.value)}
+              placeholder={bundle ? "Loading instructions…" : "Agent instructions (AGENTS.md content). Passed to the agent on every run."}
             />
           </div>
 
