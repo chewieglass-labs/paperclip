@@ -3,7 +3,7 @@ FROM node:lts-trixie-slim AS base
 ARG USER_UID=1000
 ARG USER_GID=1000
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates gosu curl gh git wget ripgrep python3 \
+  && apt-get install -y --no-install-recommends ca-certificates gosu curl gh git wget ripgrep python3 python3-pip \
   && rm -rf /var/lib/apt/lists/* \
   && corepack enable
 
@@ -52,8 +52,12 @@ WORKDIR /app
 COPY --chown=node:node --from=build /app /app
 RUN npm install --global --omit=dev @anthropic-ai/claude-code@latest @openai/codex@latest opencode-ai \
   && apt-get update \
-  && apt-get install -y --no-install-recommends openssh-client jq \
+  && apt-get install -y --no-install-recommends openssh-client jq unzip \
   && rm -rf /var/lib/apt/lists/* \
+  # Bun — needed by the claude-honcho Claude Code plugin (plastic-labs/claude-honcho)
+  && curl -fsSL https://bun.sh/install | BUN_INSTALL=/usr/local bash \
+  && pip3 install --break-system-packages \
+      "hermes-agent[honcho,mcp,cli] @ git+https://github.com/NousResearch/hermes-agent.git" \
   && mkdir -p /paperclip \
   && chown node:node /paperclip
 
